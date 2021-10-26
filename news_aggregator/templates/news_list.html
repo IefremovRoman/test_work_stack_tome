@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>News aggregator</title>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>News</th>
+                <th>Link</th>
+                <th>Published at</th>
+                <th>Trend</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for obj in object_list %}
+            <tr>
+                <td>{{ obj.id }}</td>
+                <td>{{ obj.title }}</td>
+                <td>{{ obj.link }}</td>
+                <td>{{ obj.published }}</td>
+                <td>{{ obj.trend }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+<style>
+    table, th, td {
+  border: 1px solid black;
+}
+</style>
+</html>

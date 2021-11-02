@@ -11,11 +11,15 @@ from news_aggregator.models import News
 @shared_task
 def add_news():
     news = news_aggregator()[0]
+    print(f'the news!~ {len(news)}')
+    print(news)
+    added_news_count = 0
     for new in news:
         if not News.objects.filter(**new).exists():
             News(**new).save()
+            added_news_count += 1
 
-    return 'News add'
+    return f'{added_news_count} news added'
 
 
 @shared_task

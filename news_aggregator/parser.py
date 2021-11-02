@@ -70,6 +70,8 @@ def news_aggregator():
             'published': n.published
         })
 
+    print(f'the news {len(news_list)}')
+
     news_titles = list()
     for entry in feed.entries:
         news_titles.append(entry.title)
@@ -117,14 +119,14 @@ def news_aggregator():
         return cosine_similarity(vec_a, vec_b)[0][0]
 
     # Treating our dataset
-    treshold = 0.26
+    threshold = 0.26
     correspondings = {}
     list_correspondings = []
 
     for trend_v, trend in zip(vectors_of_trends, trend_list):
         for news_v, news in zip(vectors_of_news, news_list):
             cos_sim = cosine_sim_vectors(trend_v, news_v)
-            if cos_sim > treshold:
+            if cos_sim > threshold:
                 correspondings[trend] = news['title']
                 list_correspondings.append({
                     'title': news['title'],

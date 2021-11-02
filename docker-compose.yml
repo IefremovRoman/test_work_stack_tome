@@ -1,0 +1,54 @@
+version: "3.9"
+   
+services:
+  db:
+    image: postgres
+    # volumes:
+    #   - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=stacktome
+      - POSTGRES_USER=stacktome_user
+      - POSTGRES_PASSWORD=stacktome_password
+  broker:
+    image: rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+      - '25672:25672'
+    environment:
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    restart: always
+    # volumes:
+    #   - 'rabbitmq-volume:/data'
+  web:
+    build: .
+    image: stacktome_django_app:latest
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - POSTGRES_DB=stacktome
+      - POSTGRES_USER=stacktome_user
+      - POSTGRES_PASSWORD=stacktome_password
+      - POSTGRES_HOST=db
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+  celery:
+    build: .
+    image: stacktome_django_app:latest
+    restart: on-failure
+    environment:
+      - CELERY_BROKER_URL=pyamqp://rabbitmq:rabbitmq@broker:5672
+      - POSTGRES_DB=stacktome
+      - POSTGRES_USER=stacktome_user
+      - POSTGRES_PASSWORD=stacktome_password
+      - POSTGRES_HOST=db
+    command: celery -A stack_tome worker --beat --concurrency 10 -l debug
+    depends_on:
+      - db
+      - broker
+      - web

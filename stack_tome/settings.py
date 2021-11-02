@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+from os import getenv
 from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,7 +25,7 @@ CELERY_IMPORTS = (
     'stack_tome.tasks',
 )
 
-CELERY_BROKER_URL = 'pyamqp://guest@localhost//'
+CELERY_BROKER_URL = getenv('BROKER_URL') or 'pyamqp://guest@localhost'
 
 CELERY_BEAT_SCHEDULE = {
     'scheduler_add_news': {
@@ -94,13 +95,29 @@ WSGI_APPLICATION = 'stack_tome.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+required_envs = ('POSTGRES_DB', 'POSTGRES_USER', 'POSTGRES_PASSWORD')
+
+if not all(getenv(var) for var in required_envs):
+    raise RuntimeError(f'should specify all of ${required_envs} via env')
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': getenv('POSTGRES_DB'),
+        'USER': getenv('POSTGRES_USER'),
+        'PASSWORD': getenv('POSTGRES_PASSWORD'),
+        'HOST': getenv('POSTGRES_HOST') or '127.0.0.1',
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
